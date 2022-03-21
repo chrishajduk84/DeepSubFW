@@ -1,5 +1,5 @@
 
-AttitudeController2.elf:     file format elf32-littlearm
+DeepSubFW.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
@@ -39,11 +39,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_line   000092e2  00000000  00000000  0003ac55  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00067e37  00000000  00000000  00043f37  2**0
+ 18 .debug_str    00067e2d  00000000  00000000  00043f37  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000053  00000000  00000000  000abd6e  2**0
+ 19 .comment      00000053  00000000  00000000  000abd64  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00002614  00000000  00000000  000abdc4  2**2
+ 20 .debug_frame  00002614  00000000  00000000  000abdb8  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -116,8 +116,8 @@ int main(void)
   while (1){
   // @8MHz Fclk - 3x prescale - 58666 = 22ms, 2666 = 1ms, 5332 = 2ms
   // Servo range: 1066 (1ms) - 6665(2.5ms)
-  uint16_t SERVO_HIGH = 6900;//6665;
- 800023e:	f641 23f4 	movw	r3, #6900	; 0x1af4
+  uint16_t SERVO_HIGH = 6665;
+ 800023e:	f641 2309 	movw	r3, #6665	; 0x1a09
  8000242:	80fb      	strh	r3, [r7, #6]
   uint16_t SERVO_LOW = 1066;
  8000244:	f240 432a 	movw	r3, #1066	; 0x42a

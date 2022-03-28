@@ -99,13 +99,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   //HAL_TIM_Base_Init(&htim2);
   //HAL_TIM_Base_Start(&htim2);
-
-  while (1){
+  //uint16_t SERVO_HIGH = 6665;
+  //uint16_t SERVO_LOW = 1066;
   // @8MHz Fclk - 3x prescale - 58666 = 22ms, 2666 = 1ms, 5332 = 2ms
   // Servo range: 1066 (1ms) - 6665(2.5ms)
-  uint16_t SERVO_HIGH = 6665;
-  uint16_t SERVO_LOW = 1066;
-  for (uint16_t i = SERVO_LOW; i < SERVO_HIGH; i){
+  Servo s1 = Servo(htim2, TIM_CHANNEL_2, (uint16_t)58666, (uint16_t)6665, (uint16_t)1066);
+  while (1){
+	  s1.set_angle(0);
+	  for (int j = 0; j < 1000000; j++){}
+	  s1.set_angle(90);
+	  for (int j = 0; j < 1000000; j++){}
+	  s1.set_angle(180);
+	  for (int j = 0; j < 1000000; j++){}
+	  s1.set_angle(270);
+	  for (int j = 0; j < 1000000; j++){}
+
+
+  /*for (uint16_t i = SERVO_LOW; i < SERVO_HIGH; i){
 	  setPWM(htim2, TIM_CHANNEL_2, (uint16_t)58666, i);
 	  for (int j = 0; j < 2001; j++){
 		  if (j == 2000){
@@ -137,7 +147,7 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
 	  }
   }
-
+*/
 }
 
 //  int x = 0;
@@ -377,7 +387,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void setPWM(TIM_HandleTypeDef timer, uint32_t channel, uint16_t period,
+/*void setPWM(TIM_HandleTypeDef timer, uint32_t channel, uint16_t period,
 uint16_t pulse)
 {
  HAL_TIM_PWM_Stop(&timer, channel); // stop generation of pwm
@@ -390,7 +400,7 @@ uint16_t pulse)
  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
  HAL_TIM_PWM_ConfigChannel(&timer, &sConfigOC, channel);
  HAL_TIM_PWM_Start(&timer, channel); // start pwm generation
-}
+}*/
 /* USER CODE END 4 */
 
 /**

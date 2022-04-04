@@ -103,17 +103,35 @@ int main(void)
   //uint16_t SERVO_LOW = 1066;
   // @8MHz Fclk - 3x prescale - 58666 = 22ms, 2666 = 1ms, 5332 = 2ms
   // Servo range: 1066 (1ms) - 6665(2.5ms)
-  Servo s1 = Servo(htim2, TIM_CHANNEL_2, (uint16_t)58666, (uint16_t)6665, (uint16_t)1066);
+
+  // htim2 - CH2 = Main Motor
+  // htim4 - CH1 = TOP_FLAP
+  Servo s1 = Servo(htim4, TIM_CHANNEL_1, (uint16_t)58666, (uint16_t)6665, (uint16_t)1066);
+  Thruster t1 = Thruster(htim2, TIM_CHANNEL_2, (uint16_t)53333, (uint16_t)5332, (uint16_t)2666, (uint16_t)(5332-2666)/2+2666);
   while (1){
 	  s1.set_angle(0);
-	  for (int j = 0; j < 1000000; j++){}
+	  t1.set_thrust(0);
+	  for (int j = 0; j < 6000000; j++){}
+	  for (int speed=0; speed < 100; speed++)
+	  {
+		  t1.set_thrust(speed);
+	  	  for (int j = 0; j < 100000; j++){}
+	  }
+	  for (int speed=100; speed > -100; speed--)
+	  {
+		  t1.set_thrust(speed);
+		  for (int j = 0; j < 100000; j++){}
+	  }
+	  /*t1.set_thrust(30);
 	  s1.set_angle(90);
-	  for (int j = 0; j < 1000000; j++){}
+	  for (int j = 0; j < 9000000; j++){}
+	  t1.set_thrust(0);
 	  s1.set_angle(180);
-	  for (int j = 0; j < 1000000; j++){}
+	  for (int j = 0; j < 9000000; j++){}
+	  t1.set_thrust(-100);
 	  s1.set_angle(270);
-	  for (int j = 0; j < 1000000; j++){}
-
+	  for (int j = 0; j < 9000000; j++){}
+	  */
 
   /*for (uint16_t i = SERVO_LOW; i < SERVO_HIGH; i){
 	  setPWM(htim2, TIM_CHANNEL_2, (uint16_t)58666, i);
@@ -289,7 +307,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
+  htim4.Init.Prescaler = 2;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

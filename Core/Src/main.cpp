@@ -42,6 +42,7 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
+SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
 
@@ -52,6 +53,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -91,8 +93,9 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-
+  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -106,32 +109,33 @@ int main(void)
 
   // htim2 - CH2 = Main Motor
   // htim4 - CH1 = TOP_FLAP
-  Servo s1 = Servo(htim4, TIM_CHANNEL_1, (uint16_t)58666, (uint16_t)6665, (uint16_t)1066);
-  Thruster t1 = Thruster(htim2, TIM_CHANNEL_2, (uint16_t)53333, (uint16_t)5332, (uint16_t)2666, (uint16_t)(5332-2666)/2+2666);
-  while (1){
-	  s1.set_angle(0);
-	  t1.set_thrust(0);
-	  for (int j = 0; j < 6000000; j++){}
-	  for (int speed=0; speed < 100; speed++)
-	  {
-		  t1.set_thrust(speed);
-	  	  for (int j = 0; j < 100000; j++){}
-	  }
-	  for (int speed=100; speed > -100; speed--)
-	  {
-		  t1.set_thrust(speed);
-		  for (int j = 0; j < 100000; j++){}
-	  }
-	  /*t1.set_thrust(30);
-	  s1.set_angle(90);
-	  for (int j = 0; j < 9000000; j++){}
-	  t1.set_thrust(0);
-	  s1.set_angle(180);
-	  for (int j = 0; j < 9000000; j++){}
-	  t1.set_thrust(-100);
-	  s1.set_angle(270);
-	  for (int j = 0; j < 9000000; j++){}
-	  */
+//  Servo s1 = Servo(htim4, TIM_CHANNEL_1, (uint16_t)58666, (uint16_t)6665, (uint16_t)1066);
+//  Thruster t1 = Thruster(htim2, TIM_CHANNEL_2, (uint16_t)53333, (uint16_t)5332, (uint16_t)2666, (uint16_t)(5332-2666)/2+2666);
+//  while (1){
+//	  s1.set_angle(0);
+//	  t1.set_thrust(0);
+//	  for (int j = 0; j < 6000000; j++){}
+//	  for (int speed=0; speed < 100; speed++)
+//	  {
+//		  t1.set_thrust(speed);
+//	  	  for (int j = 0; j < 100000; j++){}
+//	  }
+//	  for (int speed=100; speed > -100; speed--)
+//	  {
+//		  t1.set_thrust(speed);
+//		  for (int j = 0; j < 100000; j++){}
+//	  }
+//	  /*t1.set_thrust(30);
+//	  s1.set_angle(90);
+//	  for (int j = 0; j < 9000000; j++){}
+//	  t1.set_thrust(0);
+//	  s1.set_angle(180);
+//	  for (int j = 0; j < 9000000; j++){}
+//	  t1.set_thrust(-100);
+//	  s1.set_angle(270);
+//	  for (int j = 0; j < 9000000; j++){}
+//	  */
+//  }
 
   /*for (uint16_t i = SERVO_LOW; i < SERVO_HIGH; i){
 	  setPWM(htim2, TIM_CHANNEL_2, (uint16_t)58666, i);
@@ -165,31 +169,34 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
 	  }
   }
-*/
-}
 
-//  int x = 0;
-//  int y = 2;
-//
-//  while (1)
-//  {
-//	if (x % 100000 == 0){
-//		y += 1;
-//		if (y % 2)
-//		{
-//			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_SET);
-//		}
-//		else
-//		{
-//			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
-//		}
-//
-//	}
-//    /* USER CODE END WHILE */
-//
-//    /* USER CODE BEGIN 3 */
-//	x++;
-//  }
+
+}*/
+
+  IMU(&hspi1, GPIOC, GPIO_PIN_7);
+
+  int x = 0;
+  int y = 2;
+
+  while (1)
+  {
+	if (x % 100000 == 0){
+		y += 1;
+		if (y % 2)
+		{
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_SET);
+		}
+		else
+		{
+			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
+		}
+
+	}
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+	x++;
+  }
   /* USER CODE END 3 */
 }
 
@@ -358,6 +365,39 @@ static void MX_TIM4_Init(void)
 
 }
 
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -371,6 +411,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
@@ -400,6 +441,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   //GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+  /*Configure GPIO pin : C7_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  //GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
   /* USER CODE END 7 */
 
 }

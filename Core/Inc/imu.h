@@ -158,6 +158,10 @@ class IMU
 {
 public:
 	IMU(SPI_HandleTypeDef* hspi, GPIO_TypeDef* csi_port, uint16_t csi_pin);
+	int16_t* get_mag();
+	int16_t* get_gyro();
+	int16_t* get_accel();
+	void update();
 	uint8_t read_register(uint8_t address);
 	uint8_t* read_registers(uint8_t start_address, uint8_t* buffer, uint8_t length);
 	void write_register(uint8_t address, uint8_t data);

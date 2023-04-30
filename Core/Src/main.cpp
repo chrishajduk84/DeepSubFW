@@ -173,7 +173,16 @@ int main(void)
 
 }*/
 
-  IMU(&hspi1, GPIOC, GPIO_PIN_7);
+  IMU imu1 = IMU(&hspi1, GPIOC, GPIO_PIN_7);
+  imu1.update();
+  int16_t* accels = imu1.get_accel();
+  int16_t a = accels[0];
+  int16_t b = accels[1];
+  int16_t c = accels[2];
+
+  // 16384 scale factor
+  // 8192 / 16384 = 0.5
+  // 234 / 16384 = 0.014282227
 
   int x = 0;
   int y = 2;

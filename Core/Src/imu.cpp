@@ -14,6 +14,7 @@ IMU::IMU(SPI_HandleTypeDef* hspi, GPIO_TypeDef* csi_port, uint16_t csi_pin)
 	IMU::csi_port = csi_port;
 	IMU::csi_pin = csi_pin;
 	IMU::hspi = hspi;
+	//write_register(REG_BANK_SEL, 0); // Put operation back into bank 0
 	// Ensure we are in bank 1
 //	write_register(REG_BANK_SEL, 3 << 4); // Put operation back into bank 3
 //	write_register(I2C_SLV0_ADDR, 0); // Read the device ID
@@ -33,6 +34,9 @@ IMU::IMU(SPI_HandleTypeDef* hspi, GPIO_TypeDef* csi_port, uint16_t csi_pin)
 
 	//Exit sleep mode
 	write_register(PWR_MGMT_1, 1);
+
+	// ODR data rate determined by SMPLRT_DIV register for all sensors
+	write_register(LP_CONFIG, 0x70);
 
 	// Check that magnetometer WHO_AM_I register is as-expected
 	write_register(REG_BANK_SEL, 3 << 4); // Put operation into bank 3
@@ -56,7 +60,73 @@ IMU::IMU(SPI_HandleTypeDef* hspi, GPIO_TypeDef* csi_port, uint16_t csi_pin)
 	write_register(I2C_SLV0_CTRL, 0b10000000 | 9); //Enabling I2C slave read of magnetometer with 9 byte-length of data
 	write_register(REG_BANK_SEL, 0); // Put operation back into bank 0
 
+	uint8_t a = read_register(ACCEL_X_OUT_H);
+	uint8_t b = read_register(ACCEL_X_OUT_L);
+	uint8_t c = read_register(ACCEL_Y_OUT_H);
+	uint8_t d = read_register(ACCEL_Y_OUT_L);
+	uint8_t e = read_register(ACCEL_Z_OUT_H);
+	uint8_t f = read_register(ACCEL_Z_OUT_L);
+	write_register(REG_BANK_SEL, 2 << 4);
+	uint8_t config = read_register(ACCEL_CONFIG);
+	write_register(REG_BANK_SEL, 0);
+	int16_t y = (((int16_t)a) << 8 ) + ((int16_t)b);
+	int x = 0;
 }
+
+
+int16_t* IMU::get_mag()
+{
+	return IMU::mag;
+}
+int16_t* IMU::get_gyro()
+{
+	return IMU::gyro;
+}
+int16_t* IMU::get_accel()
+{
+	return IMU::accel;
+}
+
+void IMU::update()
+{
+	// 0 = WHO_AM_I register
+	// 1 = STATUS_1 register
+	// 2 = Hx_l
+	// 3 = Hx_h
+	// 4 = Hy_l
+	// 5 = Hy_h
+	// 6 = Hz_l
+	// 7 = Hz_h
+	// We will read from 2->7, length of 6 bytes
+	uint8_t buffer[6];
+//	IMU::read_registers(EXT_SLV_SENS_DATA_02, buffer, 6);
+//	IMU::mag[0] = (((int16_t)buffer[1]) << 8) + ((int16_t)buffer[0]);
+//	IMU::mag[1] = (((int16_t)buffer[3]) << 8) + ((int16_t)buffer[2]);
+//	IMU::mag[2] = (((int16_t)buffer[5]) << 8) + ((int16_t)buffer[4]);
+
+	// 0 = ACCEL_XOUT_H
+	// 1 = ACCEL_XOUT_L
+	// 2 = ACCEL_YOUT_H
+	// 3 = ACCEL_YOUT_L
+	// 4 = ACCEL_ZOUT_H
+	// 5 = ACCEL_ZOUT_L
+	IMU::read_registers(ACCEL_X_OUT_H, buffer, 6);
+	IMU::accel[0] = (((int16_t)buffer[0]) << 8 ) + ((int16_t)buffer[1]);
+	IMU::accel[1] = (((int16_t)buffer[2]) << 8 ) + ((int16_t)buffer[3]);
+	IMU::accel[2] = (((int16_t)buffer[4]) << 8 ) + ((int16_t)buffer[5]);
+
+	// 0 = GYRO_XOUT_H
+	// 1 = GYRO_XOUT_L
+	// 2 = GYRO_YOUT_H
+	// 3 = GYRO_YOUT_L
+	// 4 = GYRO_ZOUT_H
+	// 5 = GYRO_ZOUT_L
+//	IMU::read_registers(GYRO_X_OUT_H, buffer, 6);
+//	IMU::gyro[0] = (((int16_t)buffer[0]) << 8 ) + ((int16_t)buffer[1]);
+//	IMU::gyro[1] = (((int16_t)buffer[2]) << 8 ) + ((int16_t)buffer[3]);
+//	IMU::gyro[2] = (((int16_t)buffer[4]) << 8 ) + ((int16_t)buffer[5]);
+}
+
 
 uint8_t IMU::read_register(uint8_t address)
 {
@@ -91,6 +161,10 @@ uint8_t* IMU::read_registers(uint8_t start_address, uint8_t* rx_buffer, uint8_t 
 
 	tx_data[0] = 0x00 | 0x80; //READ
 	tx_data[1] = 0; //Response goes here
+	for (int i=2; i < length; i++)
+	{
+		tx_data[i] = 0;
+	}
 
 	HAL_GPIO_WritePin(IMU::csi_port, IMU::csi_pin, GPIO_PIN_RESET);
 	HAL_Delay(1);

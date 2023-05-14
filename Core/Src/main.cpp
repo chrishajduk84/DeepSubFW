@@ -174,11 +174,7 @@ int main(void)
 }*/
 
   IMU imu1 = IMU(&hspi1, GPIOC, GPIO_PIN_7);
-  imu1.update();
-  int16_t* accels = imu1.get_accel();
-  int16_t a = accels[0];
-  int16_t b = accels[1];
-  int16_t c = accels[2];
+
 
   // 16384 scale factor
   // 8192 / 16384 = 0.5
@@ -199,8 +195,15 @@ int main(void)
 		{
 			HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
 		}
+		  imu1.update();
+		  int16_t* accels = imu1.get_accel();
+		  int16_t a = accels[0];
+		  int16_t b = accels[1];
+		  int16_t c = accels[2];
+		  int x = 0;
 
 	}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

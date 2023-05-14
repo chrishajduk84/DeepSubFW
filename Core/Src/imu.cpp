@@ -68,6 +68,10 @@ IMU::IMU(SPI_HandleTypeDef* hspi, GPIO_TypeDef* csi_port, uint16_t csi_pin)
 	uint8_t f = read_register(ACCEL_Z_OUT_L);
 	write_register(REG_BANK_SEL, 2 << 4);
 	uint8_t config = read_register(ACCEL_CONFIG);
+	config = read_register(ACCEL_CONFIG);
+	config = read_register(ACCEL_CONFIG);
+	config = read_register(ACCEL_CONFIG);
+	config = read_register(ACCEL_CONFIG);
 	write_register(REG_BANK_SEL, 0);
 	int16_t y = (((int16_t)a) << 8 ) + ((int16_t)b);
 	int x = 0;
@@ -110,6 +114,7 @@ void IMU::update()
 	// 3 = ACCEL_YOUT_L
 	// 4 = ACCEL_ZOUT_H
 	// 5 = ACCEL_ZOUT_L
+	write_register(REG_BANK_SEL, 0); // Put operation back into bank 0
 	IMU::read_registers(ACCEL_X_OUT_H, buffer, 6);
 	IMU::accel[0] = (((int16_t)buffer[0]) << 8 ) + ((int16_t)buffer[1]);
 	IMU::accel[1] = (((int16_t)buffer[2]) << 8 ) + ((int16_t)buffer[3]);
@@ -125,6 +130,9 @@ void IMU::update()
 //	IMU::gyro[0] = (((int16_t)buffer[0]) << 8 ) + ((int16_t)buffer[1]);
 //	IMU::gyro[1] = (((int16_t)buffer[2]) << 8 ) + ((int16_t)buffer[3]);
 //	IMU::gyro[2] = (((int16_t)buffer[4]) << 8 ) + ((int16_t)buffer[5]);
+	write_register(REG_BANK_SEL, 2 << 4);
+	uint8_t config = read_register(ACCEL_CONFIG);
+	int x = 0;
 }
 
 
@@ -156,12 +164,13 @@ uint8_t IMU::read_register(uint8_t address)
 uint8_t* IMU::read_registers(uint8_t start_address, uint8_t* rx_buffer, uint8_t length)
 {
 	HAL_StatusTypeDef status;
-	uint8_t tx_data[length];
+	uint8_t tx_data[length+1];
+	uint8_t rx_data[length+1];
 	uint32_t timeout = 1000;
 
-	tx_data[0] = 0x00 | 0x80; //READ
-	tx_data[1] = 0; //Response goes here
-	for (int i=2; i < length; i++)
+	tx_data[0] = start_address | 0x80; //READ
+	//tx_data[1] = 0; //Response goes here
+	for (int i=1; i < length+1; i++)
 	{
 		tx_data[i] = 0;
 	}
@@ -169,10 +178,15 @@ uint8_t* IMU::read_registers(uint8_t start_address, uint8_t* rx_buffer, uint8_t 
 	HAL_GPIO_WritePin(IMU::csi_port, IMU::csi_pin, GPIO_PIN_RESET);
 	HAL_Delay(1);
 	//for (int i = 0; i < 100000; i++){}
-	status = HAL_SPI_TransmitReceive(IMU::hspi, tx_data, rx_buffer, length, timeout);
+	status = HAL_SPI_TransmitReceive(IMU::hspi, tx_data, rx_data, length+1, timeout);
 	//for (int i = 0; i < 100000; i++){}
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(IMU::csi_port, IMU::csi_pin, GPIO_PIN_SET);
+	for (int i = 1; i < length+1; i++)
+	{
+		rx_buffer[i-1] = rx_data[i];
+	}
+
 	return rx_buffer;
 }
 void IMU::write_register(uint8_t address, uint8_t data)
